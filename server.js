@@ -9,7 +9,7 @@ const initialize = require("./queries/initdb");
 const DEV_PORT = 8080;
 app.use( express.json() );
 
-initialize.initializeDB();
+//initialize.initializeDB();
 
 const con = mysql.createConnection({
 
@@ -29,18 +29,15 @@ END POINT: GET /user/contact/
 
 
 */
-app.get("/user/contacts",  ( req, res ) => {
+app.get("/:user/contacts",  ( req, res ) => {
+    
+    res.send("get user workds with id of " + req.params.user);
 
-       // let results = tempData.contacts.map( contact => (  contact.contact_fname,  contact.contact_lname, contact.num ));
-
-     search.getContacts( con , req.query).then(( response, err ) => {
+     search.getContacts( con , req.query, req.params.user).then(( response, err ) => {
          if( err ) throw err;
          console.log( response );
          res.status(200).send( { message: response } );
      });
-       //let results = tempData.contacts.filter( contact => contact.contact_fname == req.query.contact ).map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-        //let results = tempData.contacts.map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-
 });
 
 /*
@@ -51,45 +48,21 @@ END POINT: POST /user/contact/
 
 */
 
-app.post("/user/contacts", ( req, res )  => {
+app.post("/:user/contacts", ( req, res )  => {
 
-    //call addUser to add new user
+    res.send("post user workds with id of " + req.params.user);
 
     if( req.body.contacts.length == 0 ){
         res.status(200).send({ message: ""});
     }
 
-    add.addUser( con , req.body.contacts ).then( ( response, err ) => {
+    add.addUser( con , req.body.contacts[0], req.params.user ).then( ( response, err ) => {
         if(err) throw err;
         console.log( response );
-    })
+    });
 
     res.status(200).send({ message: "Contacts successfully updated"});
 
-    /*
-    if( req.body.number == tempData.myNum ) {
-        // let results = tempData.contacts.map( contact => (  contact.contact_fname,  contact.contact_lname, contact.num ));
-
-        if( req.body.firstname.length > 2 ){
-             
-       // let results = tempData.contacts.filter( contact => contact.contact_fname == req.body.firstname)
-
-            for( let contact of tempData.contacts ){
-                if( contact.contact_fname == req.body.firstname && contact.contact_lname == req.body.lastname) {
-                    console.log("here");
-                    contact.num = req.body.phonenum;
-                }
-            }
-            console.log(req.body.firstname, req.body.lastname, req.body.phonenum);
-            let results = tempData.contacts.filter( contact => contact.contact_fname == req.body.firstname  && contact.contact_lname == req.body.lastname );
-        
-
-         //let results = tempData.contacts.map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-         res.status(200).send({ message: `${req.body.firstname} contact info was successfully updated ` , results });
-
-        }
-     }
-     */
 })
 
 /*
@@ -101,36 +74,20 @@ END POINT: DELETE /user/contact/
 
 */
 
-app.delete("/user/contacts", ( req, res )  => {
+app.delete("/:user/contacts", ( req, res )  => {
 
-    if( req.query.contactNumber.length < 11 ){
+
+    res.send("delete user workds with id of " + req.params.user);
+    if( req.query.phoneNum.length < 11 ){
         res.status(404).send({ message: "content not found" });
     }
      else {
-         del.deleteUser( con, req.query.contactNumber ).then( (res, err) => {
+         del.deleteUser( con, req.query.phoneNum, req.params.user ).then( (res, err) => {
              if(err) throw err;
              console.log(res);
              res.status(204).send({ message: "no content" });
-         })
+         });
      }
-        
-        /*
-        // let results = tempData.contacts.filter( contact => contact.contact_fname == req.body.firstname)
-            let count = 0;
-             for( let contact of tempData.contacts ){
-                 if( contact.contact_fname == req.body.firstname && contact.contact_lname == req.body.lastname) {
-                     tempData.contacts.splice(count, 1);
-                     console.log("this");
-                 }
-                 count++;
-             }
-             
-             let results = tempData.contacts.filter( contact => contact.contact_fname == req.body.firstname  && contact.contact_lname == req.body.lastname );
-         
- 
-          //let results = tempData.contacts.map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-          res.status(200).send({ message: `${req.body.firstName} contact info was successfully deleted ` , results });
- */
     
 })
 

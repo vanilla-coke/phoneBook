@@ -2,19 +2,23 @@
 const mysql = require('mysql');
 /*
 
-where firstname like * or like info provided
-&& lastname like * or info provided
+addUser() 
+- @params: 
+    dbconn, the connection to the database,
+    data, the user provided contact information to be queried
+    userID, id of user who's contacts we wish to manipulate
+
+- return: array of results (i.e. contacts found)
 
 */
 
-async function getContacts( dbconn, params ){
+async function getContacts( dbconn, data, userId){
 
-    if( Object.keys(params).length == 0 ){
+    if( Object.keys(data).length == 0 ){
         return {};
     }
 
-    let query = 'SELECT firstName, lastName, phoneNum FROM users WHERE lastName= ' + mysql.escape(params.lastName) + ' firstName= ' + mysql.escape(params.firstName);
-
+    let query = "SELECT firstName, lastName, phoneNum FROM contacts WHERE firstName LIKE ?" + mysql.escape('%' + data.firstName + '%') + " AND lastName LIKE ?" + mysql.escape('%' + data.lastName + '%') + " AND userId=" + userId; 
     await dbconn.query(query , ( err, res ) => {
         
         if(err){

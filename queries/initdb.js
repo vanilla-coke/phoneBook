@@ -1,4 +1,3 @@
-'use strict';
 const mysql = require('mysql');
 
 const con = mysql.createConnection({
@@ -22,13 +21,14 @@ function initializeDatabase(){
    
    con.query("DROP TABLE users, contacts", function (err, result) {
         if (err) throw err;
-        console.log("Table created");
+        console.log("Tables deleted");
     });
 
     /*
     - create users table
+    contact_id INT(11) NOT NULL AUTO_INCREMENT
     */
-    let create_users = "CREATE TABLE users ( firstName varchar(10) NOT NULL, lastName varchar(10) NOT NULL, phoneNum varchar(11) PRIMARY KEY)";
+    let create_users = "CREATE TABLE users (userId INT(3) PRIMARY KEY AUTO_INCREMENT, firstName varchar(10) NOT NULL, lastName varchar(10) NOT NULL, phoneNum varchar(11))";
     con.query(create_users, function (err, result) {
       if (err) throw err;
       console.log("User table created");
@@ -37,7 +37,7 @@ function initializeDatabase(){
     /*
     - create contacts table
     */
-    let create_contacts = "CREATE TABLE contacts ( CONSTRAINT fk_contact_num FOREIGN KEY (phoneNum) REFERENCES users(phoneNum), firstName varchar(10) NOT NULL, lastName varchar(10) NOT NULL, phoneNum varchar(11) NOT NULL PRIMARY KEY, contactNum varchar(11) NOT NULL UNIQUE )";
+    let create_contacts = "CREATE TABLE contacts ( userId int(3), CONSTRAINT fk_userId FOREIGN KEY (userId) REFERENCES users(userId), firstName varchar(10) NOT NULL, lastName varchar(10) NOT NULL, phoneNum varchar(11) NOT NULL )";
     con.query(create_contacts, function (err, result) {
       if (err) throw err;
       console.log("Contacts table created");
@@ -47,8 +47,8 @@ function initializeDatabase(){
     - add users to users table
     */
 
-    let user = ['darren', 'mikes', 11111111110];
-    let add_users = "INSERT INTO users (firstName, lastName, phoneNum) VALUES (?,?,?)";
+    let user = [111, 'darren', 'mikes', 11111111110];
+    let add_users = "INSERT INTO users (userId, firstName, lastName, phoneNum) VALUES (?,?,?,?)";
     con.query(add_users, user, function (err, result) {
       if (err) throw err;
       console.log("Users successfully added");
@@ -67,14 +67,14 @@ function initializeDatabase(){
 
 
     let contacts = [
-    ['chris', 'jeff', '12312312312', '11111111110'],
-    ['peter', 'stills', '45645645645', '11111111110'],
-    ['steven', 'nash', '09809809809', '11111111110'],
-    ['chris', 'mikes', '67867867867', '11111111110'],
+    ['chris', 'jeff', '12312312312',  111],
+    ['peter', 'stills', '45645645645', 111],
+    ['steven', 'nash', '09809809809',  111],
+    ['chris', 'mikes', '67867867867',  111],
 
     ];
 
-    let add_contacts = 'INSERT INTO contacts SET firstName= ?, lastName = ?, contactNum = ?,  phoneNum = ?';
+    let add_contacts = 'INSERT INTO contacts SET firstName= ?, lastName = ?, phoneNum = ?, userId=?';
     con.query(add_contacts, [contacts], function (err, result) {
       if (err) throw err;
       console.log("Users successfully added");
