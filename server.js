@@ -1,85 +1,72 @@
 const express = require( 'express' );
+const mysql = require('mysql');
 const app = express();
-
-app.use( express.json() );
+const search = require("./queries/getContact");
+const add = require("./queries/addUser");
+const del = require("./queries/deleteUser");
+const initialize = require("./queries/initdb");
 
 const DEV_PORT = 8080;
-const PROD_PORT = 3000;
+app.use( express.json() );
+
+initialize.initializeDB();
+
+const con = mysql.createConnection({
+
+    host: "localhost",
+    user: "root",
+    password: "password",
+    database: "mydb"
+  
+  });
 
 /*
 
-user_fname = min length 3 //optional
-user_lname = min length 3 //optional
+END POINT: GET /user/contact/
 
-contact_fname = min length 3
-contact_lname = min length 3
-
-
-user_number  = min and max 11 digits
-
-contact_number = min and max 11 digits
-
+- enables users to search for one or many contacts given a first name
+- will return exact person, and or person(s) containing search parameters
 
 
 */
+app.get("/user/contacts",  ( req, res ) => {
 
-// user or 
-
-const tempData = {
-    myNum : 11111111111,
-    my_fname : "darren",
-    my_lname : "pankoff",
-    contacts : [
-        {   
-            num : 12312312312,
-            contact_fname : "jeff",
-            contact_lname : "peter"
-
-        },
-        {   
-            num : 32112332112,
-            contact_fname : "george",
-            contact_lname : "mikes"
-        },
-        
-        {   
-            num : 12345678910,
-            contact_fname : "mike",
-            contact_lname : "michaels"
-        },
-        
-        {   
-            num : 98765432100,
-            contact_fname : "george",
-            contact_lname : "smith"
-        }
-
-    ]
-};
-
-
-app.get("/user/contact", ( req, res ) => {
-
-
-    if( req.query.number == tempData.myNum ) {
        // let results = tempData.contacts.map( contact => (  contact.contact_fname,  contact.contact_lname, contact.num ));
 
-       let results = tempData.contacts.filter( contact => contact.contact_fname == req.query.contact ).map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-  
-       console.log()
+     search.getContacts( con , req.query).then(( response, err ) => {
+         if( err ) throw err;
+         console.log( response );
+         res.status(200).send( { message: response } );
+     });
+       //let results = tempData.contacts.filter( contact => contact.contact_fname == req.query.contact ).map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
         //let results = tempData.contacts.map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-        res.send( results );
-    }
-    else {
-        res.status(400).send({ message: "invalid GET request" });
-    }
-
 
 });
 
+/*
 
-app.post("/user/contact", ( req, res )  => {
+END POINT: POST /user/contact/
 
+- enables users to create or update a particular contact in their list of contacts
+
+*/
+
+app.post("/user/contacts", ( req, res )  => {
+
+    //call addUser to add new user
+
+    if( req.body.contacts.length == 0 ){
+        res.status(200).send({ message: ""});
+    }
+
+    add.addUser( con , req.body.contacts ).then( ( response, err ) => {
+        if(err) throw err;
+        console.log( response );
+    })
+
+    res.status(200).send({ message: "Contacts successfully updated"});
+
+    /*
     if( req.body.number == tempData.myNum ) {
         // let results = tempData.contacts.map( contact => (  contact.contact_fname,  contact.contact_lname, contact.num ));
 
@@ -102,17 +89,32 @@ app.post("/user/contact", ( req, res )  => {
 
         }
      }
-     else {
-         res.status(400).send({ message: "invalid POST request" });
-     }
-
-    
+     */
 })
 
-app.delete("/user/contact", ( req, res )  => {
+/*
 
-    if( req.body.firstname.length > 2 ){
-             
+END POINT: DELETE /user/contact/
+
+- enables users to delete a specific contact
+- to delete multiple, should POST with items to be deleted, then return URL to user to be able to check status, and then batch delete or one by one
+
+*/
+
+app.delete("/user/contacts", ( req, res )  => {
+
+    if( req.query.contactNumber.length < 11 ){
+        res.status(404).send({ message: "content not found" });
+    }
+     else {
+         del.deleteUser( con, req.query.contactNumber ).then( (res, err) => {
+             if(err) throw err;
+             console.log(res);
+             res.status(204).send({ message: "no content" });
+         })
+     }
+        
+        /*
         // let results = tempData.contacts.filter( contact => contact.contact_fname == req.body.firstname)
             let count = 0;
              for( let contact of tempData.contacts ){
@@ -127,15 +129,10 @@ app.delete("/user/contact", ( req, res )  => {
          
  
           //let results = tempData.contacts.map( contact => ({ "first_name" : contact.contact_fname, "last_name" : contact.contact_lname, "phoneNum" : contact.num }));
-          res.status(200).send({ message: `${req.body.firstname} contact info was successfully deleted ` , results });
- 
-    }
-    else {
-        res.status(400).send({ message: "invalid DELETE request" });
-    }
+          res.status(200).send({ message: `${req.body.firstName} contact info was successfully deleted ` , results });
+ */
     
 })
-
 
 app.listen( DEV_PORT, () => {
     console.log(`API is running and listening on port ${DEV_PORT}`);
