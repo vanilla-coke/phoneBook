@@ -30,8 +30,6 @@ END POINT: GET /user/contact/
 
 */
 app.get("/:user/contacts",  ( req, res ) => {
-    
-    res.send("get user workds with id of " + req.params.user);
 
      search.getContacts( con , req.query, req.params.user).then(( response, err ) => {
          if( err ) throw err;
@@ -50,7 +48,6 @@ END POINT: POST /user/contact/
 
 app.post("/:user/contacts", ( req, res )  => {
 
-    res.send("post user workds with id of " + req.params.user);
 
     if( req.body.contacts.length == 0 ){
         res.status(200).send({ message: ""});
@@ -76,8 +73,6 @@ END POINT: DELETE /user/contact/
 
 app.delete("/:user/contacts", ( req, res )  => {
 
-
-    res.send("delete user workds with id of " + req.params.user);
     if( req.query.phoneNum.length < 11 ){
         res.status(404).send({ message: "content not found" });
     }
