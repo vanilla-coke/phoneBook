@@ -9,7 +9,7 @@ const initialize = require("./queries/initdb");
 const DEV_PORT = 8080;
 app.use( express.json() );
 
-//initialize.initializeDB();
+initialize.initializeDB();
 
 const con = mysql.createConnection({
 
